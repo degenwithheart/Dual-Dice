@@ -145,7 +145,7 @@ const TimerText = styled.div`
 
 const ResultOverlay = styled(InfoCard)<{ $show: boolean }>`
   position: absolute;
-  top: 50%;
+  top: 20%;
   left: 50%;
   transform: translate(-50%, -50%);
   opacity: ${({ $show }) => ($show ? 1 : 0)};

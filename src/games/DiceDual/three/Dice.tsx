@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Mesh, BoxGeometry, MeshStandardMaterial } from 'three'
+import { Mesh, MeshStandardMaterial } from 'three'
 import * as THREE from 'three'
 
 interface DiceProps {
@@ -10,8 +10,8 @@ interface DiceProps {
 }
 
 export function Dice({ position, result, rolling }: DiceProps) {
+  const groupRef = useRef<THREE.Group>(null)
   const meshRef = useRef<Mesh>(null)
-  const materialRef = useRef<MeshStandardMaterial>(null)
 
   useFrame(() => {
     if (!meshRef.current) return
@@ -24,11 +24,11 @@ export function Dice({ position, result, rolling }: DiceProps) {
       // Smoothly rotate to show result face
       const targetRotations: Record<number, [number, number, number]> = {
         1: [0, 0, 0],
-        2: [Math.PI / 2, 0, 0],
-        3: [0, Math.PI / 2, 0],
+        2: [0, Math.PI / 2, 0],
+        3: [0, Math.PI, 0],
         4: [0, -Math.PI / 2, 0],
-        5: [-Math.PI / 2, 0, 0],
-        6: [Math.PI, 0, 0],
+        5: [Math.PI / 2, 0, 0],
+        6: [-Math.PI / 2, 0, 0],
       }
 
       const [targetX, targetY, targetZ] = targetRotations[result] || [0, 0, 0]
@@ -40,37 +40,83 @@ export function Dice({ position, result, rolling }: DiceProps) {
   })
 
   return (
-    <mesh ref={meshRef} position={position} castShadow receiveShadow>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial
-        ref={materialRef}
-        color="#ffffff"
-        metalness={0.3}
-        roughness={0.4}
-      />
-      {/* Dots on faces */}
-      {createDots(result)}
-    </mesh>
+    <group ref={groupRef} position={position}>
+      <mesh ref={meshRef} castShadow receiveShadow>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshStandardMaterial
+          color="#ffffff"
+          metalness={0.3}
+          roughness={0.4}
+        />
+        {/* All 6 faces always have dots */}
+        <DiceFace faceNumber={1} position={[0, 0, 0.501]} rotation={[0, 0, 0]} />
+        <DiceFace faceNumber={2} position={[0.501, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
+        <DiceFace faceNumber={3} position={[0, 0, -0.501]} rotation={[0, Math.PI, 0]} />
+        <DiceFace faceNumber={4} position={[-0.501, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
+        <DiceFace faceNumber={5} position={[0, 0.501, 0]} rotation={[-Math.PI / 2, 0, 0]} />
+        <DiceFace faceNumber={6} position={[0, -0.501, 0]} rotation={[Math.PI / 2, 0, 0]} />
+      </mesh>
+    </group>
   )
 }
 
-function createDots(faceNumber: number) {
-  // Simple dot representation - in production, use textures
-  const dotPositions: Record<number, Array<[number, number, number]>> = {
-    1: [[0, 0, 0.51]],
-    2: [[-0.25, 0.25, 0.51], [0.25, -0.25, 0.51]],
-    3: [[-0.25, 0.25, 0.51], [0, 0, 0.51], [0.25, -0.25, 0.51]],
-    4: [[-0.25, 0.25, 0.51], [0.25, 0.25, 0.51], [-0.25, -0.25, 0.51], [0.25, -0.25, 0.51]],
-    5: [[-0.25, 0.25, 0.51], [0.25, 0.25, 0.51], [0, 0, 0.51], [-0.25, -0.25, 0.51], [0.25, -0.25, 0.51]],
-    6: [[-0.25, 0.3, 0.51], [0.25, 0.3, 0.51], [-0.25, 0, 0.51], [0.25, 0, 0.51], [-0.25, -0.3, 0.51], [0.25, -0.3, 0.51]],
+function DiceFace({ 
+  faceNumber, 
+  position, 
+  rotation 
+}: { 
+  faceNumber: number
+  position: [number, number, number]
+  rotation: [number, number, number]
+}) {
+  const dotPositions = getDotPositionsForFace(faceNumber)
+  
+  return (
+    <group position={position} rotation={rotation}>
+      {dotPositions.map((dotPos, i) => (
+        <mesh key={i} position={dotPos}>
+          <sphereGeometry args={[0.08, 16, 16]} />
+          <meshStandardMaterial color="#000000" />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+function getDotPositionsForFace(faceNumber: number): Array<[number, number, number]> {
+  const dotConfigs: Record<number, Array<[number, number, number]>> = {
+    1: [[0, 0, 0]],
+    2: [
+      [-0.25, 0.25, 0],
+      [0.25, -0.25, 0]
+    ],
+    3: [
+      [-0.25, 0.25, 0],
+      [0, 0, 0],
+      [0.25, -0.25, 0]
+    ],
+    4: [
+      [-0.25, 0.25, 0],
+      [0.25, 0.25, 0],
+      [-0.25, -0.25, 0],
+      [0.25, -0.25, 0]
+    ],
+    5: [
+      [-0.25, 0.25, 0],
+      [0.25, 0.25, 0],
+      [0, 0, 0],
+      [-0.25, -0.25, 0],
+      [0.25, -0.25, 0]
+    ],
+    6: [
+      [-0.25, 0.3, 0],
+      [0.25, 0.3, 0],
+      [-0.25, 0, 0],
+      [0.25, 0, 0],
+      [-0.25, -0.3, 0],
+      [0.25, -0.3, 0]
+    ],
   }
 
-  const positions = dotPositions[faceNumber] || []
-
-  return positions.map((pos, i) => (
-    <mesh key={i} position={pos}>
-      <sphereGeometry args={[0.08, 16, 16]} />
-      <meshStandardMaterial color="#000000" />
-    </mesh>
-  ))
+  return dotConfigs[faceNumber] || []
 }

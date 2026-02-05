@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Group, Mesh } from 'three'
+import { Group } from 'three'
 import { Dice } from './Dice'
 
 interface DiceGroupProps {
@@ -12,13 +12,10 @@ interface DiceGroupProps {
 export function DiceGroup({ count, results, rolling }: DiceGroupProps) {
   const groupRef = useRef<Group>(null)
 
-  useFrame(() => {
-    if (groupRef.current && rolling) {
-      groupRef.current.rotation.y += 0.01
-    }
-  })
+  // Removed the rotation animation that was causing visual issues
+  // Each die rotates independently in the Dice component
 
-  const spacing = 1.5
+  const spacing = 2.2  // Spacing between dice
   const offset = ((count - 1) * spacing) / 2
 
   return (

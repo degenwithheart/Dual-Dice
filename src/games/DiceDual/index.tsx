@@ -4,20 +4,25 @@ import type { PublicKey } from '@solana/web3.js'
 
 import Lobby from './components/Lobby'
 import GameScreen from './components/GameScreen'
+import DebugGameScreen from './components/DebugGameScreen'
 
 export default function DiceDual() {
   const [selectedGame, setSelectedGame] = useState<PublicKey | null>(null)
+  const [debugMode, setDebugMode] = useState(false)
 
   const handleBack = useCallback(() => {
     setSelectedGame(null)
+    setDebugMode(false)
   }, [])
 
   return (
     <GambaUi.Portal target="screen">
-      {selectedGame ? (
+      {debugMode ? (
+        <DebugGameScreen onBack={() => setDebugMode(false)} />
+      ) : selectedGame ? (
         <GameScreen pk={selectedGame} onBack={handleBack} />
       ) : (
-        <Lobby onSelect={setSelectedGame} />
+        <Lobby onSelect={setSelectedGame} onDebug={() => setDebugMode(true)} />
       )}
     </GambaUi.Portal>
   )

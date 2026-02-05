@@ -62,6 +62,13 @@ const CreateButton = styled(Button)`
   }
 `
 
+const DebugButton = styled(Button)`
+  background: #ff9800;
+  &:hover {
+    background: #f57c00;
+  }
+`
+
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -119,8 +126,10 @@ const EmptyState = styled.div`
 
 export default function Lobby({
   onSelect,
+  onDebug,
 }: {
   onSelect(pk: PublicKey): void
+  onDebug(): void
 }) {
   const { games, loading, refresh } = useSpecificGames(
     { maxPlayers: DESIRED_MAX_PLAYERS, winnersTarget: DESIRED_WINNERS_TARGET },
@@ -179,6 +188,9 @@ export default function Lobby({
             <CreateButton onClick={() => setIsModalOpen(true)}>
               + Create Game
             </CreateButton>
+            <DebugButton onClick={onDebug}>
+              🐞 Debug Mode
+            </DebugButton>
             <Button onClick={refresh} disabled={loading}>
               {loading ? 'Loading...' : 'Refresh'}
             </Button>
@@ -258,7 +270,7 @@ export default function Lobby({
           </Table>
         ) : (
           <EmptyState>
-            {loading ? 'Loading games...' : 'No active games. Create one to get started!'}
+            {loading ? 'Loading games...' : 'No active games. Create one or try debug mode!'}
           </EmptyState>
         )}
 
